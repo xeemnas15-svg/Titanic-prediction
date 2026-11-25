@@ -1,6 +1,7 @@
 flask
 pandas
 gunicorn
+numpy
 itsdangerous
 Jinja2
 MarkupSafe
