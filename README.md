@@ -68,7 +68,7 @@ The Random Forest was slightly better, so it was saved and used in the web app.
    ```
    venv\Scripts\python.exe app.py
    ```
-5. Open http://127.0.0.1:5000 in your browser.
+5. Open (https://titanic-prediction-qxi2.onrender.com/predict) in your browser.
 
 ## Using the app
 Choose the ticket class, sex, age, family members aboard, fare (in 1912 British pounds) and port of boarding, then press **Check my fate**. The app shows whether the model predicts survival and the percentage chance.
