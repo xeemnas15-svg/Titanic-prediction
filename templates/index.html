@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>RMS Titanic Survival Predictor</title>
+
+  <style>
+    /* Vintage black and white look, inspired by the old Titanic photographs */
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Georgia, 'Times New Roman', serif;
+      background: #1a1a1a;
+      color: #1a1a1a;
+      line-height: 1.5;
+    }
+
+    /* Top banner, like an old photograph */
+    .banner {
+      background: linear-gradient(#cfcfcf, #8f8f8f);
+      text-align: center;
+      padding: 28px 16px 0;
+      border-bottom: 6px solid #000;
+    }
+    .banner h1 {
+      margin: 0;
+      font-size: 2rem;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: #111;
+    }
+    .banner p {
+      margin: 6px 0 0;
+      font-style: italic;
+      color: #2b2b2b;
+    }
+    .banner svg { width: 100%; max-width: 560px; height: auto; display: block; margin: 12px auto 0; }
+
+    /* The ticket card that holds the form */
+    .ticket {
+      max-width: 560px;
+      margin: 24px auto;
+      background: #f3efe6;
+      border: 2px solid #000;
+      outline: 6px double #f3efe6;
+      outline-offset: -12px;
+      padding: 28px 24px;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.6);
+    }
+    .ticket h2 {
+      margin: 0 0 4px;
+      text-align: center;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      font-size: 1.2rem;
+    }
+    .ticket .sub { text-align: center; font-style: italic; margin: 0 0 20px; }
+
+    label { display: block; margin-top: 14px; font-weight: bold; font-size: 0.95rem; }
+    .hint { font-weight: normal; font-style: italic; font-size: 0.85rem; color: #444; }
+
+    input, select {
+      width: 100%;
+      margin-top: 4px;
+      padding: 10px;
+      font-family: inherit;
+      font-size: 1rem;
+      border: 1.5px solid #000;
+      background: #fffdf8;
+      color: #111;
+    }
+
+    button {
+      width: 100%;
+      margin-top: 22px;
+      padding: 14px;
+      font-family: inherit;
+      font-size: 1.05rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      background: #111;
+      color: #f3efe6;
+      border: 2px solid #000;
+      cursor: pointer;
+    }
+    button:hover { background: #333; }
+
+    /* Result box */
+    .result {
+      margin-top: 24px;
+      padding: 18px;
+      text-align: center;
+      border: 3px double #000;
+      background: #fffdf8;
+    }
+    .result h3 { margin: 0 0 6px; font-size: 1.5rem; text-transform: uppercase; letter-spacing: 2px; }
+    .result p { margin: 4px 0; }
+    .bar { height: 14px; background: #ccc; border: 1.5px solid #000; margin-top: 10px; }
+    .bar div { height: 100%; background: #111; }
+
+    .error {
+      margin-top: 16px;
+      padding: 10px;
+      border: 2px solid #000;
+      background: #e0dcd2;
+      text-align: center;
+      font-weight: bold;
+    }
+
+    footer { text-align: center; color: #aaa; font-size: 0.85rem; padding: 0 16px 28px; }
+  </style>
+</head>
+
+<body>
+
+  <!-- Top banner with a simple ship drawing -->
+  <header class="banner">
+    <h1>RMS Titanic</h1>
+    <p>Would you have survived the voyage of 1912?</p>
+
+    <svg viewBox="0 0 560 150" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Drawing of the Titanic">
+      <!-- masts -->
+      <line x1="120" y1="20" x2="120" y2="85" stroke="#111" stroke-width="2"/>
+      <line x1="440" y1="30" x2="440" y2="85" stroke="#111" stroke-width="2"/>
+      <!-- four funnels -->
+      <rect x="190" y="45" width="26" height="42" fill="#111"/>
+      <rect x="235" y="42" width="26" height="45" fill="#111"/>
+      <rect x="280" y="42" width="26" height="45" fill="#111"/>
+      <rect x="325" y="45" width="26" height="42" fill="#111"/>
+      <!-- decks -->
+      <rect x="95" y="80" width="370" height="12" fill="#444"/>
+      <!-- hull -->
+      <path d="M40 92 L500 92 L470 125 L70 125 Z" fill="#111"/>
+      <!-- water -->
+      <path d="M0 130 Q35 120 70 130 T140 130 T210 130 T280 130 T350 130 T420 130 T490 130 T560 130 L560 150 L0 150 Z" fill="#555"/>
+    </svg>
+  </header>
+
+  <!-- The form -->
+  <main class="ticket">
+    <h2>Boarding Pass</h2>
+    <p class="sub">Enter the passenger details</p>
+
+    {% if error %}
+      <div class="error">{{ error }}</div>
+    {% endif %}
+
+    <form action="/predict" method="POST">
+
+      <label for="pclass">Ticket class</label>
+      <select id="pclass" name="pclass" required>
+        <option value="" disabled {% if not form.get('pclass') %}selected{% endif %}>Choose class</option>
+        <option value="1" {% if form.get('pclass') == '1' %}selected{% endif %}>1st class</option>
+        <option value="2" {% if form.get('pclass') == '2' %}selected{% endif %}>2nd class</option>
+        <option value="3" {% if form.get('pclass') == '3' %}selected{% endif %}>3rd class</option>
+      </select>
+
+      <label for="sex">Sex</label>
+      <select id="sex" name="sex" required>
+        <option value="" disabled {% if not form.get('sex') %}selected{% endif %}>Choose sex</option>
+        <option value="female" {% if form.get('sex') == 'female' %}selected{% endif %}>Female</option>
+        <option value="male" {% if form.get('sex') == 'male' %}selected{% endif %}>Male</option>
+      </select>
+
+      <label for="age">Age</label>
+      <input type="number" id="age" name="age" min="1" max="100" step="any"
+             value="{{ form.get('age', '') }}" placeholder="e.g. 28" required>
+
+      <label for="sibsp">Siblings or spouse aboard
+        <span class="hint">(brothers, sisters, husband or wife)</span></label>
+      <input type="number" id="sibsp" name="sibsp" min="0" max="10"
+             value="{{ form.get('sibsp', '0') }}" required>
+
+      <label for="parch">Parents or children aboard</label>
+      <input type="number" id="parch" name="parch" min="0" max="10"
+             value="{{ form.get('parch', '0') }}" required>
+
+      <label for="fare">Ticket fare
+        <span class="hint">(in 1912 British pounds, e.g. 7 to 512)</span></label>
+      <input type="number" id="fare" name="fare" min="0" step="any"
+             value="{{ form.get('fare', '') }}" placeholder="e.g. 32" required>
+
+      <label for="embarked">Port where the passenger boarded</label>
+      <select id="embarked" name="embarked" required>
+        <option value="" disabled {% if not form.get('embarked') %}selected{% endif %}>Choose port</option>
+        <option value="S" {% if form.get('embarked') == 'S' %}selected{% endif %}>Southampton</option>
+        <option value="C" {% if form.get('embarked') == 'C' %}selected{% endif %}>Cherbourg</option>
+        <option value="Q" {% if form.get('embarked') == 'Q' %}selected{% endif %}>Queenstown</option>
+      </select>
+
+      <button type="submit">Check my fate</button>
+    </form>
+
+    <!-- The result only shows after a prediction -->
+    {% if result %}
+      <div class="result">
+        {% if result.survived %}
+          <h3>Survived</h3>
+          <p>The model predicts this passenger would have made it.</p>
+        {% else %}
+          <h3>Did not survive</h3>
+          <p>The model predicts this passenger would not have made it.</p>
+        {% endif %}
+        <p>Chance of survival: <strong>{{ result.chance }}%</strong></p>
+        <div class="bar"><div style="width: {{ result.chance }}%"></div></div>
+      </div>
+    {% endif %}
+  </main>
+
+  <footer>
+    Built with a Random Forest model trained on the Titanic dataset (about 82% accuracy).<br>
+    A learning project. It predicts patterns in old data, not real people.
+  </footer>
+
+</body>
+</html>
